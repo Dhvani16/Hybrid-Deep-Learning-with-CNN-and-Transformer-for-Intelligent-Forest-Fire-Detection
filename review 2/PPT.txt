@@ -1,0 +1,345 @@
+================================================================
+21CSC601T — CASE STUDIES
+HYBRID DEEP LEARNING WITH CNN AND TRANSFORMER
+FOR INTELLIGENT FOREST FIRE DETECTION
+PPT SLIDE CONTENT — REVIEW 2 (CASE ANALYSIS & PROGRESS)
+================================================================
+Name   : Dhvani Patel
+Roll No: RA2512005010044
+Degree : M.Tech — Computer Science and Engineering
+Guide  : [Guide Name], Department of Computing Technologies
+         SRM Institute of Science and Technology
+Date   : October 2026
+================================================================
+
+
+----------------------------------------------------------------
+SLIDE 1 — TITLE SLIDE
+----------------------------------------------------------------
+Course   : 21CSC601T • Case Studies
+Title    : Hybrid Deep Learning with CNN and Transformer
+           for Intelligent Forest Fire Detection
+Subtitle : Case Analysis & Progress
+Name     : Dhvani Patel
+Roll No  : RA2512005010044
+Guide    : [Guide Name], Department of Computing Technologies
+           SRM Institute of Science and Technology • October 2026
+
+
+----------------------------------------------------------------
+SLIDE 2 — AGENDA
+----------------------------------------------------------------
+Heading: Agenda
+
+► 1. DEPTH & MULTIFACETED VIEW OF THE CASE
+  • Problem statement: why forest fire detection is critical
+  • Research gap: limitations of CNN-only and Transformer-only approaches
+  • Hypothesis: hybrid architecture combining both paradigms
+
+► 2. INFORMATION GATHERED FROM THE RESOURCES
+  • Literature survey: 10 key papers across CNN, ViT, and Hybrid architectures
+  • Dataset sourced from Kaggle (phylake1337) — 999 real-world fire images
+  • Tools: PyTorch, timm, albumentations, scikit-learn, pytorch-grad-cam
+
+► 3. ANALYSIS OF CONCRETE DATA / EVIDENCE
+  • 3-model comparison on identical dataset split (70/15/15 stratified)
+  • Evaluation metrics: Accuracy, Precision, Recall, F1-Score, AUC-ROC
+  • Confusion matrix, ROC curves, and model comparison bar chart
+
+► 4. APPLICATION OF THEORETICAL KNOWLEDGE
+  • CNN local feature extraction theory applied via EfficientNet-B4 backbone
+  • Transformer self-attention theory applied via 4-layer encoder (8 heads)
+  • Two-phase training strategy based on transfer learning principles
+
+► 5. EMERGING INSIGHTS / DECISION-MAKING
+  • Key findings from experimental results
+  • Analysis of model behaviour using Grad-CAM and attention maps
+  • Failure case patterns and implications for real-world deployment
+
+
+----------------------------------------------------------------
+SLIDE 3 — DEPTH & MULTIFACETED VIEW OF THE CASE
+----------------------------------------------------------------
+Heading: Depth & Multifaceted View of the Case
+
+► 1. TECHNICAL ANGLE — System, Process & Engineering Aspects
+  • Problem: Existing CNN models lack global receptive field; ViT models are
+    data-hungry — neither alone is sufficient for small fire datasets
+  • Solution: Hybrid pipeline — EfficientNet-B4 backbone extracts local fire
+    features (7×7×1792 feature map) → 1×1 Conv projection → 4-layer Transformer
+    Encoder captures long-range spatial dependencies across 49 patch tokens
+  • Engineering decisions: two-phase training strategy (backbone frozen → full
+    fine-tune with differential LR) to stabilise convergence on limited data
+  • Class-weighted cross-entropy loss to handle 3.09:1 dataset imbalance
+  • Interpretability built in: Grad-CAM on CNN layers + attention maps on
+    Transformer to validate that the model focuses on fire/smoke regions
+
+► 2. OPERATIONAL / STAKEHOLDER ANGLE — Who Is Affected & How
+  • Primary users: forest departments, disaster management agencies,
+    firefighting teams — need fast, reliable early-warning detection
+  • Current systems (satellite passes, watchtowers, smoke sensors) have
+    1–2 hour latency; a deep learning model can respond within seconds
+  • False negatives (missed fires) are catastrophic — ViT achieved 100% Recall,
+    meaning zero fires missed on the test set; this directly reduces response lag
+  • False positives (false alarms) waste resources — ViT achieved highest
+    Precision (99.13%), and Hybrid achieved 98.26% Precision with strong Recall
+  • Model outputs (fire/no-fire + confidence score) can integrate directly
+    into existing alert dashboards and GIS monitoring platforms
+
+► 3. SOCIETAL / WIDER ANGLE — Community, Environment & Policy
+  • Forest fires destroy biodiversity, release CO₂, and accelerate climate change;
+    350–400 million hectares burned annually (global estimate)
+  • Early detection (minutes vs. hours) can prevent small ignitions from
+    becoming megafires — protecting communities, wildlife, and air quality
+  • A reliable, low-cost deep learning model (runs on free Colab T4 GPU)
+    makes fire monitoring accessible to under-resourced forest regions
+  • Findings support policy push for AI-integrated national fire monitoring
+    systems alongside satellites and ground sensors
+  • Future extension to UAV/drone deployment enables surveillance of
+    remote forest areas inaccessible to human watchtowers
+
+
+----------------------------------------------------------------
+SLIDE 4 — INFORMATION GATHERED FROM THE RESOURCES
+----------------------------------------------------------------
+Heading: Information Gathered from the Resources
+
+► ACADEMIC LITERATURE — collected via Google Scholar, IEEE Xplore, arXiv
+  • 10 key papers surveyed across 3 model categories:
+  • CNN-Based:
+    — FireNet (Jadon et al., 2019) — arXiv:1905.11922
+    — ResNet-50 fire detection (Xu et al., 2020) — Journal of Forestry Research
+    — EfficientNet-B0 fire detection (Zhang et al., 2021)
+    — De Venâncio et al. (2022) — Neural Computing and Applications
+  • Transformer-Based:
+    — ViT: An Image is Worth 16×16 Words (Dosovitskiy et al., 2021) — ICLR
+    — Swin Transformer (Liu et al., 2021) — ICCV
+    — Fire Detection using Transformer Networks (Sudhakar et al., 2023)
+  • Hybrid Models:
+    — CoAtNet (Dai et al., 2021) — NeurIPS
+    — Multi-Scale Feature Fusion CNN (Li et al., 2022)
+    — FLAME 2 Dataset & CNN+SVM ensemble (Shamsoshoara et al., 2023) — IEEE Access
+
+► IMAGE DATASET — downloaded via Kaggle API
+  • Primary dataset: phylake1337 / fire-dataset (Kaggle)
+    — 755 fire images + 244 no-fire images = 999 total
+    — Ground-level RGB photographs, varied conditions
+    — Download command: kaggle datasets download -d phylake1337/fire-dataset
+  • Additional datasets identified (not used in final training):
+    — D-Fire (De Venâncio et al., 2022) — 21,527 images, GitHub
+    — FLAME 2 (Shamsoshoara et al., 2023) — aerial UAV footage, IEEE DataPort
+    — NASA FIRMS — geographic fire hotspot coordinates for GIS mapping
+
+► PRETRAINED MODEL WEIGHTS — loaded via timm library (pip install timm)
+  • EfficientNet-B4 — pretrained on ImageNet-1K (1.28M images, 1000 classes)
+  • ViT-B/16        — pretrained on ImageNet-21K (14M images, 21,841 classes)
+  • Both weights provide strong visual feature priors before fine-tuning
+
+► SOFTWARE TOOLS & LIBRARIES — installed via pip
+  ┌──────────────────────┬───────────────────────────────────────────┐
+  │ Library              │ Purpose                                   │
+  ├──────────────────────┼───────────────────────────────────────────┤
+  │ PyTorch 2.x          │ Deep learning framework, model training   │
+  │ timm                 │ Pretrained CNN and ViT model weights      │
+  │ albumentations       │ Image augmentation pipeline               │
+  │ scikit-learn         │ Evaluation metrics (F1, AUC-ROC, etc.)    │
+  │ pytorch-grad-cam     │ Grad-CAM interpretability visualisation   │
+  │ matplotlib / seaborn │ Plots — training curves, confusion matrix │
+  │ pandas               │ Results table and CSV export              │
+  │ OpenCV (cv2)         │ Image loading and attention map overlay   │
+  │ Pillow               │ Image format handling                     │
+  └──────────────────────┴───────────────────────────────────────────┘
+
+► COMPUTE RESOURCE — Google Colaboratory
+  • Hardware: NVIDIA Tesla T4 GPU (free tier)
+  • Environment: Python 3.10, CUDA-enabled GPU training
+  • Notebook: forest_fire_complete.ipynb — single end-to-end pipeline
+
+
+----------------------------------------------------------------
+SLIDE 5 — ANALYSIS OF CONCRETE DATA / EVIDENCE
+----------------------------------------------------------------
+Heading: Analysis of Concrete Data & Evidence
+
+► ANALYSIS 1 — MODEL PERFORMANCE METRICS
+  • Data / Evidence Summary   : Test set results for all 3 models (152 images)
+                                Accuracy, Precision, Recall, F1-Score, AUC-ROC
+  • Analysis Method Applied   : scikit-learn classification_report, roc_auc_score
+  • Key Pattern / Finding     : All models exceed 98% accuracy; ViT achieves 100%
+                                Recall and highest Precision (99.13%); Hybrid improved
+                                significantly (95.39% → 98.03% accuracy)
+  • Implication               : No single model dominates all metrics — choice
+                                depends on deployment priority (zero missed fires
+                                → ViT; fewest false alarms → Hybrid)
+
+► ANALYSIS 2 — CONFUSION MATRIX (Hybrid Model)
+  • Data / Evidence Summary   : 152 test predictions broken into TP, TN, FP, FN
+  • Analysis Method Applied   : sklearn.metrics.confusion_matrix + seaborn heatmap
+  • Key Pattern / Finding     : Hybrid made 3 total errors — 1 false negative
+                                (missed fire) and 2 false positives (false alarms)
+  • Implication               : Hybrid accuracy improved to 98.03%; in fire safety
+                                context the 1 missed fire is the critical risk to address
+
+► ANALYSIS 3 — ROC CURVE COMPARISON
+  • Data / Evidence Summary   : Predicted fire probabilities vs. true labels,
+                                plotted across all classification thresholds
+  • Analysis Method Applied   : sklearn.metrics.roc_curve + matplotlib overlay
+  • Key Pattern / Finding     : CNN AUC=0.9984, ViT AUC=1.0000, Hybrid AUC=0.9975
+                                — all curves hug the top-left corner; near-perfect
+                                separation between fire and no-fire classes
+  • Implication               : All 3 models are highly reliable discriminators;
+                                ViT's AUC of 1.0000 is perfect
+
+► ANALYSIS 4 — TRAINING CURVE ANALYSIS
+  • Data / Evidence Summary   : Epoch-by-epoch train/val loss and accuracy
+                                across all 28 training epochs (phase 1 + phase 2)
+  • Analysis Method Applied   : History dict saved as .pt files, plotted with matplotlib
+  • Key Pattern / Finding     : Two-phase boundary clearly visible — sharp gain in
+                                phase 1, smooth convergence in phase 2; no overfitting
+                                gap between train and val accuracy in any model
+  • Implication               : Two-phase training strategy worked as designed —
+                                pretrained features preserved while new layers adapted
+
+► ANALYSIS 5 — GRAD-CAM INTERPRETABILITY
+  • Data / Evidence Summary   : 8 test images (4 fire + 4 no-fire) with CNN heatmaps
+  • Analysis Method Applied   : pytorch-grad-cam on last EfficientNet-B4 conv block
+  • Key Pattern / Finding     : Bright activation regions consistently align with
+                                flame cores, smoke plumes, and reddish boundaries —
+                                not trees, sky, or irrelevant background
+  • Implication               : CNN component learns semantically correct features;
+                                model decisions are trustworthy and explainable
+
+► ANALYSIS 6 — TRANSFORMER ATTENTION MAPS
+  • Data / Evidence Summary   : CLS token attention weights from final Transformer
+                                layer over 3 fire test images
+  • Analysis Method Applied   : Forward hook on self_attn layer → reshape 49
+                                weights → 7×7 grid → upsample → overlay
+  • Key Pattern / Finding     : Attention spreads across the full scene — smoke
+                                boundaries and fire-sky transitions highlighted,
+                                showing global context is captured
+  • Implication               : Transformer component adds value beyond CNN by
+                                reasoning about spatial relationships across the image
+
+► ANALYSIS 7 — FAILURE CASE ANALYSIS
+  • Data / Evidence Summary   : 3 misclassified test images sorted by confidence
+  • Analysis Method Applied   : Manual visual inspection + confidence score sorting
+  • Key Pattern / Finding     : FP pattern — red/orange foliage and sunsets trigger
+                                fire prediction; FN pattern — faint smoke without
+                                visible flames is missed
+  • Implication               : Hard negatives (visually fire-like scenes) remain
+                                a challenge; future work — smoke-only augmentation
+                                and multi-class labels (fire / smoke / neither)
+
+
+----------------------------------------------------------------
+SLIDE 6 — APPLICATION OF THEORETICAL KNOWLEDGE
+----------------------------------------------------------------
+Heading: Application of Theoretical Knowledge
+
+► THEORY 1 — CONVOLUTIONAL NEURAL NETWORKS (CNN)
+  • Theory / Concept Applied  : CNNs use learnable filters that slide spatially
+                                across an image to detect local patterns —
+                                edges, textures, and colour gradients layer by layer
+  • How It Explains the Case  : EfficientNet-B4 applied as backbone detects
+                                localised fire cues — flame edges, orange-red
+                                colour gradients, and smoke texture — producing
+                                a rich 7×7×1792 feature map from each input image
+
+► THEORY 2 — TRANSFER LEARNING & FINE-TUNING
+  • Theory / Concept Applied  : A model pretrained on a large dataset (ImageNet)
+                                learns general visual features that transfer to new
+                                tasks with far less data and training time
+  • How It Explains the Case  : EfficientNet-B4 (ImageNet-1K) and ViT-B/16
+                                (ImageNet-21K) arrive with strong visual priors;
+                                fine-tuning on 698 fire images is sufficient to
+                                achieve >95% accuracy — without pretraining this
+                                would require tens of thousands of fire images
+
+► THEORY 3 — TRANSFORMER SELF-ATTENTION MECHANISM
+  • Theory / Concept Applied  : Self-attention computes a relevance score between
+                                every pair of tokens, allowing any two positions
+                                in the sequence to directly influence each other
+                                regardless of spatial distance
+  • How It Explains the Case  : Applied after CNN feature extraction — the 49
+                                patch tokens (7×7 grid) attend to each other
+                                across the full scene; smoke in one corner and
+                                a heat shimmer in another can jointly confirm fire,
+                                which a CNN kernel alone cannot do
+
+► THEORY 4 — HYBRID ARCHITECTURE DESIGN PRINCIPLE
+  • Theory / Concept Applied  : Combining inductive biases of two paradigms —
+                                CNN's translation equivariance (strong on local
+                                structure) with Transformer's global context
+                                (strong on long-range dependencies)
+  • How It Explains the Case  : CNN extracts semantically rich local fire features
+                                first, reducing the burden on the Transformer;
+                                the Transformer then reasons globally over those
+                                features — requiring fewer layers (4 vs. 12 in ViT)
+                                and less data to converge effectively
+
+► THEORY 5 — TWO-PHASE TRAINING STRATEGY
+  • Theory / Concept Applied  : Catastrophic forgetting — training a pretrained
+                                network with a large learning rate overwrites
+                                previously learned weights; warm-up with frozen
+                                backbone protects pretrained features
+  • How It Explains the Case  : Phase 1 freezes EfficientNet-B4 and trains only
+                                the Transformer + head, allowing new layers to
+                                stabilise; Phase 2 unfreezes all layers with a
+                                lower backbone LR (1×10⁻⁵) to fine-tune gently
+                                without losing ImageNet-learned visual features
+
+► THEORY 6 — CLASS-WEIGHTED LOSS FOR IMBALANCED DATA
+  • Theory / Concept Applied  : Standard cross-entropy treats all classes equally;
+                                inverse-frequency weighting penalises mistakes on
+                                minority classes more heavily, forcing the model
+                                to learn both classes despite imbalance
+  • How It Explains the Case  : Dataset has a 3.09:1 fire-to-no-fire ratio; without
+                                weighting the model would bias toward always
+                                predicting "fire"; weighted loss ensures no-fire
+                                cases are learnt correctly, improving Precision
+
+► THEORY 7 — GRAD-CAM (GRADIENT-WEIGHTED CLASS ACTIVATION MAPPING)
+  • Theory / Concept Applied  : Gradients of the predicted class score with respect
+                                to the last convolutional feature map are used to
+                                weight spatial activations — producing a heatmap
+                                of which regions drove the prediction
+  • How It Explains the Case  : Applied to EfficientNet-B4's final conv block —
+                                heatmaps confirm the model focuses on flame cores
+                                and smoke boundaries, not trees or sky, validating
+                                that predictions are based on correct visual evidence
+
+
+----------------------------------------------------------------
+SLIDE 7 — EMERGING INSIGHTS / DECISION-MAKING
+----------------------------------------------------------------
+Heading: Emerging Insights & Decision-Making
+
+► INSIGHT 1 — HYPOTHESIS PARTIALLY SUPPORTED
+  • ViT-B/16 outperformed the Hybrid (99.34% vs. 98.03% accuracy)
+  • Strong ImageNet-21K pretraining transfers better than a custom
+    CNN+Transformer on a 999-image dataset — not an architectural flaw
+
+► INSIGHT 2 — NO SINGLE BEST MODEL; TRADE-OFF IS USE-CASE DEPENDENT
+  • ViT: perfect Recall (100%) — best for zero missed fires
+  • Hybrid: strong Precision (98.26%) and same Recall as CNN (99.12%) — well-balanced
+
+► INSIGHT 3 — INTERPRETABILITY IS NON-NEGOTIABLE IN SAFETY SYSTEMS
+  • Grad-CAM confirms model attends to flame cores and smoke boundaries
+  • Transformer attention maps confirm global scene context is captured
+  • A 99% accurate model that focuses on the wrong pixels is not deployable
+
+► INSIGHT 4 — FAILURE CASES DEFINE THE NEXT DESIGN PRIORITY
+  • False positives: red sunsets and orange foliage trigger fire prediction
+  • False negatives: faint smoke without visible flame is missed
+  • Binary classification is insufficient — multi-class labels are needed
+
+► DIRECTION OF RECOMMENDATION
+  • Scale dataset to 10,000+ images to unlock the Hybrid model's advantage
+  • Extend to multi-class: fire / smoke / smouldering / no-fire
+  • Deploy ViT in safety-critical systems; Hybrid where false alarms are costly
+  • Pursue edge compression (pruning, quantisation) for UAV deployment
+
+
+================================================================
+END OF PPT CONTENT — REVIEW 2
+================================================================

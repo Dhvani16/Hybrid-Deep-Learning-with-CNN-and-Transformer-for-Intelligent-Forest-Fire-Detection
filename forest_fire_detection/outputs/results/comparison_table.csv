@@ -1,0 +1,4 @@
+Model,Accuracy,Precision,Recall,F1-Score,AUC-ROC
+CNN (EfficientNet-B4),0.9868,0.9912,0.9912,0.9912,0.9984
+ViT-B/16,0.9934,0.9913,1.0,0.9956,1.0
+Hybrid CNN+Transformer (Ours),0.9803,0.9826,0.9912,0.9869,0.9975

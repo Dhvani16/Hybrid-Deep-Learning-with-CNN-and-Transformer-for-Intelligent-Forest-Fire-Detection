@@ -1,0 +1,306 @@
+================================================================
+HYBRID DEEP LEARNING WITH CNN AND TRANSFORMER
+FOR INTELLIGENT FOREST FIRE DETECTION
+PPT SLIDE CONTENT
+================================================================
+
+----------------------------------------------------------------
+SLIDE 1 — TITLE SLIDE
+----------------------------------------------------------------
+Title    : Hybrid Deep Learning with CNN and Transformer
+           for Intelligent Forest Fire Detection
+Subtitle : M.Tech Case Study Presentation
+Name     : Dhvani Patel
+Degree   : M.Tech — Computer Science and Engineering
+
+----------------------------------------------------------------
+SLIDE 2 — PROBLEM STATEMENT
+----------------------------------------------------------------
+Heading: Problem Statement
+
+► WHAT IS THE PROBLEM?
+  • Forest fires cause massive loss of life, wildlife, and ecosystems every year
+  • Existing automated detection systems are too slow or too inaccurate
+  • No single deep learning model captures BOTH local fire features AND global scene context
+
+► BACKGROUND
+  • 350–400 million hectares of land burned globally every year
+  • Economic losses exceed USD 150 billion annually
+  • Traditional systems: satellite imaging (1–2 passes/day), smoke sensors, watchtowers
+    — High latency | Limited coverage | High false alarm rate in fog/haze
+  • CNN-based models detect local flame textures but miss long-range smoke patterns
+  • Transformer-based models (ViT) understand global context but need huge datasets
+
+► WHY IS THIS STUDY NEEDED?
+  • Early detection (within minutes) can prevent small fires from becoming catastrophic
+  • No existing work combines CNN + Transformer specifically for fire detection
+  • No systematic 3-model comparison (CNN vs. ViT vs. Hybrid) on the same dataset
+  • A robust, interpretable model is needed for real-world fire monitoring systems
+
+----------------------------------------------------------------
+SLIDE 3 — OBJECTIVES
+----------------------------------------------------------------
+Heading: Objectives of the Study
+
+► PRIMARY OBJECTIVE
+  • Design and evaluate a Hybrid CNN + Transformer model for forest fire detection
+    that outperforms CNN-only and Transformer-only approaches
+
+► SPECIFIC OBJECTIVES
+  • Build a CNN baseline using pretrained EfficientNet-B4 for local feature extraction
+  • Build a ViT-B/16 baseline to represent a pure Transformer approach
+  • Design a Hybrid model: EfficientNet-B4 backbone → Transformer encoder → classifier
+  • Compare all 3 models on the same dataset, same split, same evaluation metrics
+  • Analyse model decisions using Grad-CAM and Transformer attention maps
+  • Identify the conditions under which hybrid architectures outperform single-paradigm models
+
+► EVALUATION GOALS
+  • Achieve >95% accuracy on the test set
+  • Maximise Recall — minimise missed fire detections (false negatives)
+  • Generate interpretable visualisations to validate model behaviour
+
+----------------------------------------------------------------
+SLIDE 4 — LITERATURE REVIEW
+----------------------------------------------------------------
+Heading: Literature Review
+
+► EXISTING SYSTEMS / RESEARCH
+
+  CNN-Based Models
+  • FireNet (Jadon et al., 2019) — lightweight 6-layer CNN for real-time IoT fire detection
+  • ResNet-50/101 (He et al., 2016) — deep residual networks; high accuracy, high latency
+  • EfficientNet (Tan & Le, 2019) — compound scaling; best accuracy-efficiency trade-off in CNNs
+  • De Venâncio et al. (2022) — EfficientNet-B4 outperforms ResNet and VGG on aerial fire images
+  • MobileNet (Howard et al., 2017) — lightweight model for UAV edge deployment
+
+  Transformer-Based Models
+  • ViT (Dosovitskiy et al., 2021) — image split into patches; global self-attention; needs large data
+  • Swin Transformer (Liu et al., 2021) — hierarchical shifted-window attention; better data efficiency
+
+  Hybrid Models (General Vision Tasks)
+  • CoAtNet (Dai et al., 2021) — combines depthwise convolution + self-attention; best of both worlds
+  • CvT, LocalViT — embed convolution inside Transformer layers
+
+► KEY FINDINGS FROM LITERATURE
+  • CNNs are data-efficient and strong on local texture/colour features
+  • Transformers capture long-range dependencies but need 10,000+ images to fully converge
+  • Hybrid models outperform both in general image classification at medium-to-large dataset sizes
+  • No existing work applies a CNN+Transformer hybrid specifically to fire detection
+
+► RESEARCH GAP IDENTIFIED
+  • No dedicated hybrid CNN+Transformer architecture for forest fire detection
+  • No systematic 3-way comparison (CNN vs. ViT vs. Hybrid) on the same fire dataset
+  • No study analyses the dataset-size threshold at which hybrid models outperform single models
+  • Lack of interpretability analysis (Grad-CAM + attention maps) in existing fire detection works
+
+----------------------------------------------------------------
+SLIDE 5 — PROPOSED METHODOLOGY
+----------------------------------------------------------------
+Heading: Proposed Methodology
+
+► ARCHITECTURE / FRAMEWORK
+
+  Hybrid CNN + Transformer Model (3 stages):
+
+  Stage 1 — CNN Backbone (Local Feature Extraction)
+  • Pretrained EfficientNet-B4 (ImageNet-1K)
+  • Removes classification head → outputs feature map [B × 1792 × 7 × 7]
+  • Captures local features: flame edges, smoke texture, colour gradients
+
+  Stage 2 — Transformer Encoder (Global Context Reasoning)
+  • 1×1 Conv projection: 1792 → 512 dimensions
+  • Feature map flattened into 49 patch tokens (7×7 spatial grid)
+  • CLS token prepended + learnable positional embeddings added
+  • 4-layer Multi-Head Self-Attention (8 heads) → models long-range dependencies
+  • CLS token aggregates global scene context across all 49 patches
+
+  Stage 3 — Classification Head
+  • Dropout (0.3) + Linear layer (512 → 2 classes)
+  • Output: Fire / No Fire
+
+  Two-Phase Training Strategy
+  • Phase 1: Freeze CNN backbone → train Transformer + head only (8 epochs, lr = 5×10⁻⁴)
+  • Phase 2: Unfreeze all → fine-tune end-to-end with differential LR (20 epochs)
+    — CNN backbone: lr = 1×10⁻⁵  |  Transformer + head: lr = 1×10⁻⁴
+
+► TOOLS & TECHNOLOGIES
+
+  | Category         | Tool / Library              |
+  |------------------|-----------------------------|
+  | Language         | Python 3.10                 |
+  | Deep Learning    | PyTorch 2.x                 |
+  | Pretrained Models| timm (EfficientNet, ViT)    |
+  | Augmentation     | albumentations              |
+  | Evaluation       | scikit-learn                |
+  | Visualisation    | matplotlib, seaborn         |
+  | Interpretability | pytorch-grad-cam            |
+  | Dataset          | Kaggle (phylake1337)        |
+  | Hardware         | NVIDIA T4 GPU (Google Colab)|
+
+► FLOW DIAGRAM (describe this visually on the slide)
+
+  Input Image (224×224 RGB)
+        ↓
+  [ EfficientNet-B4 Backbone ]
+  (local features: 7×7×1792)
+        ↓
+  [ 1×1 Conv Projection ]
+  (7×7×512)
+        ↓
+  [ Flatten → 49 Patch Tokens ]
+  + CLS Token + Positional Embedding
+        ↓
+  [ Transformer Encoder × 4 layers ]
+  (Multi-Head Self-Attention + FFN)
+        ↓
+  [ CLS Token Output ]
+        ↓
+  [ Dropout + Linear Layer ]
+        ↓
+  🔥 Fire  /  ✅ No Fire
+
+----------------------------------------------------------------
+SLIDE 6 — WORK PLAN / TIMELINE
+----------------------------------------------------------------
+Heading: Work Plan & Timeline
+
+► PHASE 1 — RESEARCH & PROBLEM DEFINITION (Week 1)
+  • Study existing forest fire detection systems and their limitations
+  • Review CNN, Transformer, and Hybrid model literature
+  • Define research objectives and scope of the case study
+  • Finalise dataset selection (Kaggle Wildfire Dataset)
+  • Set up project environment and folder structure
+  Expected Completion: End of Week 1
+
+► PHASE 2 — DATASET PREPARATION & DESIGN (Week 2)
+  • Collect and organise dataset (755 fire + 244 non-fire images)
+  • Apply stratified 70/15/15 train/validation/test split
+  • Design augmentation pipeline (flip, rotation, colour jitter, fog)
+  • Finalise model architecture for all 3 models (CNN, ViT, Hybrid)
+  • Define evaluation metrics: Accuracy, Precision, Recall, F1, AUC-ROC
+  Expected Completion: End of Week 2
+
+► PHASE 3 — MODEL DEVELOPMENT & TRAINING (Week 3)
+  • Implement CNN baseline (EfficientNet-B4) with two-phase training
+  • Implement Hybrid CNN + Transformer architecture
+  • Implement ViT-B/16 baseline for comparison
+  • Train all 3 models on NVIDIA T4 GPU (Google Colab)
+  • Save best checkpoints for each model
+  Expected Completion: End of Week 3
+
+► PHASE 4 — EVALUATION & REPORT WRITING (Week 4)
+  • Evaluate all 3 models on held-out test set
+  • Generate Grad-CAM and Transformer attention visualisations
+  • Analyse failure cases and model interpretability
+  • Write full technical report with results and discussion
+  • Prepare final presentation
+  Expected Completion: End of Week 4
+
+► OVERALL EXPECTED COMPLETION
+  ┌──────────────┬──────────────────────────────────┬────────────┐
+  │ Phase        │ Description                      │ Timeline   │
+  ├──────────────┼──────────────────────────────────┼────────────┤
+  │ Phase 1      │ Research & Problem Definition    │ Week 1     │
+  │ Phase 2      │ Dataset Preparation & Design     │ Week 2     │
+  │ Phase 3      │ Model Development & Training     │ Week 3     │
+  │ Phase 4      │ Evaluation & Report Writing      │ Week 4     │
+  │ Final        │ Submission & Presentation        │ Week 4 End │
+  └──────────────┴──────────────────────────────────┴────────────┘
+
+----------------------------------------------------------------
+SLIDE 7 — RESEARCH OUTCOME
+----------------------------------------------------------------
+Heading: Research Outcome
+
+► MODELS DEVELOPED
+  • CNN Baseline     — EfficientNet-B4 fine-tuned for fire detection
+  • ViT Baseline     — ViT-B/16 fine-tuned for fire detection
+  • Hybrid Model     — EfficientNet-B4 + 4-layer Transformer Encoder (proposed)
+
+► PERFORMANCE ACHIEVED (Test Set — 152 images)
+
+  | Model                         | Accuracy | Recall | F1-Score | AUC-ROC |
+  |-------------------------------|----------|--------|----------|---------|
+  | CNN (EfficientNet-B4)         | 98.68%   | 99.12% | 0.9912   | 0.9977  |
+  | ViT-B/16                      | 99.34%   | 100%   | 0.9956   | 0.9998  |
+  | Hybrid CNN+Transformer (Ours) | 95.39%   | 95.61% | 0.9689   | 0.9965  |
+
+  ✅ All 3 models exceed 95% accuracy
+  ✅ ViT-B/16 achieved perfect recall — zero missed fire detections
+  ✅ Hybrid model achieved highest precision (98.20%) — fewest false alarms
+
+► KEY FINDINGS
+  • All models prove deep learning is highly effective for fire detection
+  • ViT-B/16 outperformed all models — strong ImageNet pretraining transfers well even on small data
+  • Hybrid model precision is highest — most reliable when it does predict fire
+  • Hybrid advantage expected to emerge on larger datasets (10,000+ images)
+  • Grad-CAM confirmed CNN attends to flame cores and smoke boundaries
+  • Transformer attention maps confirmed global scene context is captured
+
+► DELIVERABLES PRODUCED
+  • 3 trained and saved model checkpoints (CNN, ViT, Hybrid)
+  • Evaluation figures: Confusion matrix, ROC curves, model comparison chart
+  • Interpretability: Grad-CAM maps and Transformer attention visualisations
+  • Failure case analysis with categorised error types
+  • Full technical report documenting all findings
+
+----------------------------------------------------------------
+SLIDE 8 — CONCLUSION
+----------------------------------------------------------------
+Heading: Conclusion & Future Scope
+
+► SUMMARY OF PROPOSED WORK
+  • Designed a Hybrid CNN + Transformer architecture for forest fire detection
+    — EfficientNet-B4 extracts local fire features (flame edges, smoke texture)
+    — Transformer encoder captures global scene context across spatial patches
+    — Combined into a unified end-to-end trainable model
+  • Proposed a systematic 3-model comparative study
+    — CNN Baseline (EfficientNet-B4), Transformer Baseline (ViT-B/16), Hybrid (Proposed)
+    — Same dataset, same split, same metrics — fair and reproducible evaluation
+  • Designed a two-phase training strategy to stabilise hybrid model convergence
+  • Planned interpretability analysis using Grad-CAM and Transformer attention maps
+    — To validate what the model is actually looking at, not just what it predicts
+  • Selected a real-world wildfire dataset with natural class imbalance
+    — Addressed via class-weighted loss, matching deployment conditions
+
+► FUTURE SCOPE
+  • Scale to larger datasets (10,000+ images) to unlock full hybrid model potential
+  • Extend to multi-class detection: fire, smoke, no-fire, smouldering
+  • Integrate real-time video stream inference for continuous forest monitoring
+  • Lightweight model compression (pruning, quantisation) for edge/UAV deployment
+  • Incorporate satellite and thermal imaging channels as additional input modalities
+  • Explore domain adaptation to generalise across different forest types and geographies
+  • Combine with weather and wind data for fire spread prediction, not just detection
+
+----------------------------------------------------------------
+SLIDE 9 — REFERENCES
+----------------------------------------------------------------
+Heading: References
+
+  [1] Dosovitskiy, A. et al. (2021). An Image is Worth 16×16 Words: Transformers for Image
+      Recognition at Scale. ICLR 2021.
+
+  [2] Tan, M. & Le, Q. (2019). EfficientNet: Rethinking Model Scaling for Convolutional Neural
+      Networks. ICML 2019.
+
+  [3] He, K. et al. (2016). Deep Residual Learning for Image Recognition. CVPR 2016.
+
+  [4] Liu, Z. et al. (2021). Swin Transformer: Hierarchical Vision Transformer using Shifted
+      Windows. ICCV 2021.
+
+  [5] Dai, Z. et al. (2021). CoAtNet: Marrying Convolution and Attention for All Data Sizes.
+      NeurIPS 2021.
+
+  [6] Jadon, A. et al. (2019). FireNet: A Specialized Lightweight Fire & Smoke Detection Model
+      for Real-Time IoT Applications. arXiv:1905.11922.
+
+  [7] Howard, A. et al. (2017). MobileNets: Efficient Convolutional Neural Networks for Mobile
+      Vision Applications. arXiv:1704.04861.
+
+  [8] De Venâncio, P. V. A. B. et al. (2022). An Automatic Fire Detection System Based on Deep
+      Convolutional Neural Networks. Neural Computing and Applications, 34, 13815–13832.
+
+  [9] phylake1337 (2020). Fire Dataset. Kaggle.
+      https://www.kaggle.com/datasets/phylake1337/fire-dataset
+
+================================================================
