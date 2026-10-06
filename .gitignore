@@ -1,12 +1,5 @@
 .DS_Store
 
-# Model checkpoints and large output files
-*.pth
-*.pt
-*.pkl
-forest_fire_detection/outputs.zip
-forest_fire_detection/outputs/checkpoints/
-
 # Python
 __pycache__/
 *.pyc
