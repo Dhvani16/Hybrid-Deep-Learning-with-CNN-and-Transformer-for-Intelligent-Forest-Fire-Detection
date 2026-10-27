@@ -135,7 +135,9 @@ The four gaps identified in Section III translate directly into five research ob
 
 ### A. Architecture Overview
 
-The proposed hybrid model processes an input image through four sequential stages: (i) a pretrained CNN backbone extracts hierarchical local spatial feature maps; (ii) a 1×1 convolutional projection compresses the feature channels to the Transformer embedding dimension; (iii) the projected map is flattened into a sequence of patch tokens with positional encodings appended, and a learnable CLS token is prepended; and (iv) a lightweight Transformer encoder applies global multi-head self-attention over the full token sequence, with the final CLS token representation used for binary classification. Each stage is designed to target information the preceding stage cannot efficiently capture: the CNN encodes local flame and smoke texture cues, while the Transformer integrates these local representations into a global scene-level decision.
+The proposed hybrid model processes an input image through four sequential stages: (i) a pretrained CNN backbone extracts hierarchical local spatial feature maps; (ii) a 1×1 convolutional projection compresses the feature channels to the Transformer embedding dimension; (iii) the projected map is flattened into a sequence of patch tokens with positional encodings appended, and a learnable CLS token is prepended; and (iv) a lightweight Transformer encoder applies global multi-head self-attention over the full token sequence, with the final CLS token representation used for binary classification. Each stage is designed to target information the preceding stage cannot efficiently capture: the CNN encodes local flame and smoke texture cues, while the Transformer integrates these local representations into a global scene-level decision. The complete architecture is illustrated in Fig. 1.
+
+![Fig. 1: Overview of the proposed Hybrid CNN+Transformer architecture. The top row shows the forward pass from input image through the EfficientNet-B4 backbone, 1×1 Conv+BN projection, and tokenisation stages. The token sequence (49 spatial patches + 1 CLS token, each of dimension 512) is fed into a 4-layer Transformer encoder. The CLS token output is passed through a classifier head to produce the final binary fire/no-fire prediction. Phase annotations indicate which components are frozen (Phase 1) and which are end-to-end fine-tuned with differential learning rates (Phase 2).](outputs/plots/architecture_diagram.png)
 
 ### B. CNN Backbone
 
@@ -415,9 +417,9 @@ Table VIII reports the five evaluation metrics for all three models on the 152-i
 
 The ViT-B/16 baseline achieves the highest accuracy (99.34%), recall (100%), F1-score (0.9956), and AUC-ROC (1.0000) across all three models. Notably, ViT-B/16 records perfect recall — it classifies every one of the 114 fire images in the test set correctly, producing zero false negatives. The CNN baseline achieves the joint-highest precision (0.9912, equal to ViT's 0.9913 within rounding) and a competitive AUC-ROC of 0.9984, with only 2 total misclassifications on 152 images. The proposed hybrid model achieves 98.03% accuracy and 0.9869 F1-score; while it ranks third on all aggregate metrics, it maintains strong precision (0.9826), competitive recall (0.9912, equal to CNN), and AUC-ROC of 0.9975 — all within 1.5 percentage points of the leading model on each metric. All three models substantially exceed the performance of a random classifier and demonstrate high discrimination capability on the fire detection task.
 
-![Fig. 1. Per-metric comparison of all three models on the 152-image test set.](outputs/plots/model_comparison_bar.png)
+![Fig. 2. Per-metric comparison of all three models on the 152-image test set.](outputs/plots/model_comparison_bar.png)
 
-**Fig. 1.** Per-metric bar chart comparing CNN Baseline, ViT-B/16, and Hybrid CNN+Transformer across all five evaluation metrics on the held-out test set.
+**Fig. 2.** Per-metric bar chart comparing CNN Baseline, ViT-B/16, and Hybrid CNN+Transformer across all five evaluation metrics on the held-out test set.
 
 ### B. Confusion Matrices
 
@@ -433,41 +435,41 @@ Table IX reports the confusion matrices for all three models on the test set. Th
 
 The ViT-B/16 baseline achieves the fewest total errors (1), committing a single false positive (one no-fire image classified as fire) and zero false negatives. The CNN baseline commits 2 errors (1 FP, 1 FN). The hybrid commits 3 errors (2 FP, 1 FN). In the safety-critical fire detection context, false negatives (missed fires) carry the highest operational risk; all three models miss at most 1 fire in 114, corresponding to a recall of ≥99.12%.
 
-![Fig. 2. Confusion matrix for the Hybrid CNN+Transformer on the 152-image test set.](outputs/plots/confusion_matrix_hybrid.png)
+![Fig. 3. Confusion matrix for the Hybrid CNN+Transformer on the 152-image test set.](outputs/plots/confusion_matrix_hybrid.png)
 
-**Fig. 2.** Confusion matrix for the proposed hybrid model (TP=113, FP=2, TN=36, FN=1).
+**Fig. 3.** Confusion matrix for the proposed hybrid model (TP=113, FP=2, TN=36, FN=1).
 
 ### C. Receiver Operating Characteristic Analysis
 
-Fig. 1 shows the ROC curves for all three models on the test set. All three curves track tightly along the top-left boundary of the ROC space, confirming that the confidence scores produced by each model provide near-perfect threshold-independent discrimination between fire and no-fire images. The ViT-B/16 curve achieves AUC=1.000, reaching perfect true-positive rate before accumulating any false positives — the only model to do so. The CNN baseline (AUC=0.9984) and hybrid (AUC=0.9975) are marginally below the ViT curve at very low false-positive-rate operating points, consistent with their slightly higher total error counts, but both remain in the exceptional range (AUC > 0.99). The tight clustering of all three ROC curves across the full operating range indicates that the performance differences between models are primarily concentrated in the zero-threshold classification decision, rather than in the underlying soft-score distributions.
+Fig. 4 shows the ROC curves for all three models on the test set. All three curves track tightly along the top-left boundary of the ROC space, confirming that the confidence scores produced by each model provide near-perfect threshold-independent discrimination between fire and no-fire images. The ViT-B/16 curve achieves AUC=1.000, reaching perfect true-positive rate before accumulating any false positives — the only model to do so. The CNN baseline (AUC=0.9984) and hybrid (AUC=0.9975) are marginally below the ViT curve at very low false-positive-rate operating points, consistent with their slightly higher total error counts, but both remain in the exceptional range (AUC > 0.99). The tight clustering of all three ROC curves across the full operating range indicates that the performance differences between models are primarily concentrated in the zero-threshold classification decision, rather than in the underlying soft-score distributions.
 
-![Fig. 3. ROC curves for all three models on the 152-image test set.](outputs/plots/roc_curves.png)
+![Fig. 4. ROC curves for all three models on the 152-image test set.](outputs/plots/roc_curves.png)
 
-**Fig. 3.** ROC curves — CNN Baseline (AUC=0.9984), ViT-B/16 (AUC=1.0000), Hybrid (AUC=0.9975). All three curves hug the top-left boundary; ViT-B/16 achieves perfect AUC.
+**Fig. 4.** ROC curves — CNN Baseline (AUC=0.9984), ViT-B/16 (AUC=1.0000), Hybrid (AUC=0.9975). All three curves hug the top-left boundary; ViT-B/16 achieves perfect AUC.
 
 ### D. Grad-CAM Spatial Saliency Analysis
 
-Fig. 2 presents Grad-CAM activation maps computed from the final convolutional block of EfficientNet-B4 within the hybrid model for four fire and four no-fire test samples.
+Fig. 5 presents Grad-CAM activation maps computed from the final convolutional block of EfficientNet-B4 within the hybrid model for four fire and four no-fire test samples.
 
 For fire images, the Grad-CAM maps consistently produce high-activation regions (red/orange/yellow heatmap values) that are spatially colocalised with visible flame structures. In images containing large building fires with human observers in the foreground, the activation concentrates across the full flame mass while remaining low over the crowd region, confirming that the CNN encodes flame texture rather than contextual scene elements such as bystanders. In nighttime fire images with bright vertical flame columns, the Grad-CAM activation is elongated vertically to track the flame plume structure, demonstrating sensitivity to the directional geometry of the fire.
 
 For no-fire images (forest and vegetation scenes), the Grad-CAM heatmaps are nearly uniformly low (blue), with no spatially coherent hot regions. The absence of spurious activation in the no-fire maps confirms that the CNN backbone is not latching onto texture artefacts or image-level colour statistics that might mimic fire (e.g., warm-toned soil or dried vegetation).
 
-![Fig. 4. Grad-CAM activation maps for the Hybrid model — four fire samples (left) and four no-fire samples (right).](outputs/plots/gradcam.png)
+![Fig. 5. Grad-CAM activation maps for the Hybrid model — four fire samples (left) and four no-fire samples (right).](outputs/plots/gradcam.png)
 
-**Fig. 4.** Grad-CAM activations from the final EfficientNet-B4 convolutional block. Fire images show high activation (red/yellow) co-localised with visible flame structures; no-fire images show near-zero activation (blue) across all spatial regions.
+**Fig. 5.** Grad-CAM activations from the final EfficientNet-B4 convolutional block. Fire images show high activation (red/yellow) co-localised with visible flame structures; no-fire images show near-zero activation (blue) across all spatial regions.
 
 ### E. Transformer CLS-Token Attention Analysis
 
-Fig. 3 presents CLS-token attention maps extracted from the final Transformer encoder layer for three fire samples, displayed at the native 7×7 patch resolution.
+Fig. 6 presents CLS-token attention maps extracted from the final Transformer encoder layer for three fire samples, displayed at the native 7×7 patch resolution.
 
 Across all three samples, the head-averaged CLS attention exhibits broad spatial coverage relative to the Grad-CAM maps. In the first sample — a nighttime large-fire scene with prominent smoke occupying the upper portion of the image — CLS attention is distributed across multiple spatial patches spanning both the lower flame core and the upper smoke-filled region, attending to scene-level contextual information beyond the immediate flame boundary. In the second sample — a daytime fire with a crowd of observers — attention is distributed broadly across the vertical extent of the scene, including patches that contain smoke transition regions and partially occluded flame areas that the CNN Grad-CAM activates less strongly. In the third sample — a low-intensity ground fire at night — the CLS attention concentrates on the lower-centre patches containing the visible flame source with a secondary spread toward adjacent patches, showing appropriate spatial selectivity even at the coarse 7×7 resolution.
 
 The spatial contrast between the two analysis types is consistent with the intended architectural division of labour: Grad-CAM captures localised, high-confidence flame boundary activations from the CNN, while CLS-token attention integrates evidence across broader scene regions including smoke dispersion and background context. However, given the small dataset size (698 training images), the Transformer's attention patterns are less sharp than those typically observed in models trained on larger corpora, and some residual attention entropy across non-fire patches is present.
 
-![Fig. 5. Transformer CLS-token attention maps for three fire samples at 7×7 patch resolution.](outputs/plots/attention_maps.png)
+![Fig. 6. Transformer CLS-token attention maps for three fire samples at 7×7 patch resolution.](outputs/plots/attention_maps.png)
 
-**Fig. 5.** CLS-token attention maps from the final Transformer encoder layer (head-averaged, bicubically upsampled). Each row shows the original image, the raw 7×7 attention map, and the overlay. Attention spans broader scene regions — including smoke-filled areas — compared to the localised Grad-CAM activations in Fig. 4.
+**Fig. 6.** CLS-token attention maps from the final Transformer encoder layer (head-averaged, bicubically upsampled). Each row shows the original image, the raw 7×7 attention map, and the overlay. Attention spans broader scene regions — including smoke-filled areas — compared to the localised Grad-CAM activations in Fig. 5.
 
 ### F. Failure Case Analysis
 
@@ -481,11 +483,11 @@ These failure modes are consistent across all three model configurations — the
 
 ### G. Training Dynamics
 
-Fig. 6 shows the training and validation loss and accuracy curves for all three models across their full training schedules (CNN and ViT: 25 epochs; Hybrid: 28 epochs). The two-phase structure is visible in each curve: Phase 1 (frozen backbone) produces a rapid initial drop in loss and a corresponding rise in accuracy as the newly initialised head layers converge; Phase 2 (full fine-tuning with differential learning rates) provides a slower, more gradual refinement as the pretrained backbone weights are gently adjusted.
+Fig. 7 shows the training and validation loss and accuracy curves for all three models across their full training schedules (CNN and ViT: 25 epochs; Hybrid: 28 epochs). The two-phase structure is visible in each curve: Phase 1 (frozen backbone) produces a rapid initial drop in loss and a corresponding rise in accuracy as the newly initialised head layers converge; Phase 2 (full fine-tuning with differential learning rates) provides a slower, more gradual refinement as the pretrained backbone weights are gently adjusted.
 
-![Fig. 6. Training and validation curves for all three models.](outputs/plots/all_training_curves.png)
+![Fig. 7. Training and validation curves for all three models.](outputs/plots/all_training_curves.png)
 
-**Fig. 6.** Training and validation loss and accuracy curves across all three model configurations. The phase boundary between frozen-backbone warm-up and full fine-tuning is visible as an inflection point in each curve.
+**Fig. 7.** Training and validation loss and accuracy curves across all three model configurations. The phase boundary between frozen-backbone warm-up and full fine-tuning is visible as an inflection point in each curve.
 
 ---
 
@@ -576,7 +578,7 @@ This pretraining-scale confound means that the ViT-vs.-hybrid comparison is not 
 
 The two-phase training strategy (RO2) demonstrably stabilises hybrid training on the small dataset. Without Phase 1 frozen-backbone warm-up, the random Transformer gradients would propagate into the pretrained EfficientNet-B4 weights in the first epoch, potentially causing catastrophic forgetting [39] of the rich ImageNet representations before the Transformer has formed coherent attention patterns. Phase 1 allows the Transformer encoder to converge to a reasonable initialisation (using the CNN's existing feature quality) before Phase 2 unlocks the full gradient flow with differential learning rates.
 
-The differential learning rate in Phase 2 — backbone at $1 \times 10^{-5}$, Transformer at $1 \times 10^{-4}$ — is equally critical: it preserves the pretrained CNN feature hierarchy while allowing the Transformer to continue refining its attention weights at a higher rate. The training curves (Fig. 6) confirm stable convergence across all 28 epochs with no evidence of instability or loss divergence, validating the two-phase strategy's practical effectiveness. The same protocol applied to the CNN and ViT baselines with analogous phase structures also converges cleanly, confirming that the protocol generalises across the three configurations and is not over-fitted to the hybrid's specific architecture.
+The differential learning rate in Phase 2 — backbone at $1 \times 10^{-5}$, Transformer at $1 \times 10^{-4}$ — is equally critical: it preserves the pretrained CNN feature hierarchy while allowing the Transformer to continue refining its attention weights at a higher rate. The training curves (Fig. 7) confirm stable convergence across all 28 epochs with no evidence of instability or loss divergence, validating the two-phase strategy's practical effectiveness. The same protocol applied to the CNN and ViT baselines with analogous phase structures also converges cleanly, confirming that the protocol generalises across the three configurations and is not over-fitted to the hybrid's specific architecture.
 
 ### D. Dual Interpretability: Complementary Evidence
 
