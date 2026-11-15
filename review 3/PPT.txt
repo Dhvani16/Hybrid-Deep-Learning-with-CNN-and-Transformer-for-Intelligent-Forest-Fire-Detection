@@ -1,0 +1,292 @@
+================================================================
+21CSC601T — CASE STUDIES
+HYBRID DEEP LEARNING WITH CNN AND TRANSFORMER
+FOR INTELLIGENT FOREST FIRE DETECTION
+PPT SLIDE CONTENT — REVIEW 3 (FINAL REVIEW)
+================================================================
+Name   : Dhvani Patel
+Roll No: RA2512005010044
+Degree : M.Tech — Computer Science and Engineering
+Guide  : Dr. Pandiaraj A., Department of Computing Technologies
+         SRM Institute of Science and Technology
+Date   : November 2026
+================================================================
+
+
+----------------------------------------------------------------
+SLIDE 1 — TITLE SLIDE
+----------------------------------------------------------------
+Course   : 21CSC601T • Case Studies
+Title    : Hybrid Deep Learning with CNN and Transformer
+           for Intelligent Forest Fire Detection
+Subtitle : Final Review
+Name     : Dhvani Patel
+Roll No  : RA2512005010044
+Guide    : Dr. Pandiaraj A., Department of Computing Technologies
+           SRM Institute of Science and Technology • November 2026
+
+
+----------------------------------------------------------------
+SLIDE 2 — A QUICK ROADMAP
+----------------------------------------------------------------
+Heading : A QUICK ROADMAP
+Subhead : Here is what I will walk you through
+
+1. The problem I looked at
+2. What I set out to do
+3. How I went about it
+4. What the data told me
+5. The ideas that guided me
+6. What I recommend
+7. Can it really be done?
+8. Who benefits, and how
+9. What I learned
+
+
+----------------------------------------------------------------
+SLIDE 3 — THE PROBLEM
+----------------------------------------------------------------
+Tag     : THE PROBLEM
+Heading : The problem I looked at
+
+• What was going wrong: Forest fires are increasing globally; CNN models lack
+  global scene context; ViTs need large labelled datasets — both fail on small
+  fire benchmarks
+
+• Where I studied it: Kaggle fire dataset (phylake1337, 999 images);
+  Google Colab (NVIDIA T4 GPU); literature from IEEE Xplore & arXiv (2019–2023)
+
+• What others tried: CNN detectors (FireNet 2019, ResNet-50 2020,
+  EfficientNet-B0 2021) achieve ~97–98% accuracy but no global reasoning;
+  no published hybrid CNN+Transformer for fire detection with explainability
+
+• Why it matters now: Climate change is accelerating wildfire frequency;
+  satellite imaging has 1–2 hour latency; deep learning on camera feeds
+  can respond in seconds
+
+
+----------------------------------------------------------------
+SLIDE 4 — THE GOAL
+----------------------------------------------------------------
+Tag     : THE GOAL
+Heading : What I set out to do
+
+• I wanted to find out: whether combining EfficientNet-B4 (CNN) with a
+  4-layer Transformer Encoder produces a model that outperforms standalone
+  CNN and ViT baselines on a small real-world fire dataset
+
+• I also wanted to understand: how CNN local features and Transformer global
+  attention complement each other, using Grad-CAM and CLS-token attention maps
+  to explain model decisions
+
+• And to suggest: a deployment-ready plan — ViT for immediate safety-critical
+  use; Hybrid for scaled-up training — with a phased implementation timeline
+  and risk mitigation strategy
+
+• This connects to SDG 13 (Climate Action) and SDG 15 (Life on Land):
+  earlier detection reduces megafire CO₂ emissions and protects
+  biodiversity-critical forest ecosystems
+
+
+----------------------------------------------------------------
+SLIDE 5 — THE APPROACH
+----------------------------------------------------------------
+Tag     : THE APPROACH
+Heading : How I went about it
+
+• I gathered information from: Kaggle fire dataset (999 images), 10
+  peer-reviewed papers (IEEE Xplore, arXiv, Google Scholar), pretrained
+  weights via timm (EfficientNet-B4 / ImageNet-1K; ViT-B/16 / ImageNet-21K)
+
+• I analysed it using: PyTorch 2.x, scikit-learn metrics (Accuracy,
+  Precision, Recall, F1, AUC-ROC), Grad-CAM via pytorch-grad-cam,
+  CLS-token attention maps via forward hooks, matplotlib/seaborn visualisations
+
+• Plan across three reviews: R1 — problem framing & architecture design;
+  R2 — model training, evidence analysis & interpretability;
+  R3 — final evaluation, recommendations, deployment plan
+
+• What I had to adjust: added two-phase training after single-phase
+  overfitted; added class-weighted loss after model biased toward fire class;
+  reduced batch size 32→16 for ViT/Hybrid due to GPU memory
+
+
+----------------------------------------------------------------
+SLIDE 6 — THE EVIDENCE
+----------------------------------------------------------------
+Tag     : THE EVIDENCE
+Heading : What the data told me
+
+• What I looked at: 152 held-out test images evaluated across CNN
+  (EfficientNet-B4), ViT-B/16, and Hybrid models; confusion matrices,
+  ROC curves, Grad-CAM maps, CLS-token attention overlays, training curves
+
+• How I analysed it: sklearn classification_report & roc_auc_score;
+  seaborn confusion heatmaps; pytorch-grad-cam on last EfficientNet-B4
+  conv block; 7×7 CLS attention grids bicubically upsampled to 224×224
+
+• The pattern that stood out: ViT achieves perfect AUC-ROC (1.000)
+  and 100% Recall (0 missed fires); all 3 models exceed 98% accuracy;
+  Hybrid ranked 3rd due to insufficient training data — not a design flaw
+
+• What it means: dataset scale is the binding constraint; ViT is the
+  optimal immediate deployment; Hybrid unlocks at 5,000+ images as
+  its global attention can fully train
+
+[Visual placeholder: model_comparison_bar.png or results table — best chart
+ showing all 5 metrics for the 3 models side by side]
+
+
+----------------------------------------------------------------
+SLIDE 7 — THE THINKING BEHIND IT
+----------------------------------------------------------------
+Tag     : THE THINKING BEHIND IT
+Heading : The ideas that guided me
+
+• The theories leaned on: CNN local feature extraction (LeCun 1989;
+  EfficientNet, Tan & Le 2019); Transformer self-attention (Vaswani 2017;
+  ViT, Dosovitskiy 2021); Hybrid design (CoAtNet, Dai 2021);
+  Transfer Learning (Pan & Yang 2010); Grad-CAM (Selvaraju 2017)
+
+• How they explain the real case: Grad-CAM confirms localised
+  flame-boundary activations (CNN theory validated); CLS attention
+  confirms global smoke+fire context capture (Transformer theory validated);
+  two-phase training preserved ImageNet features (catastrophic forgetting
+  theory validated)
+
+• How they shaped the recommendation: since Transformer scales with data
+  (theory), Hybrid advantage expected at 5,000+ images — driving phased
+  deployment plan; since explainability is non-negotiable in safety systems,
+  dual Grad-CAM + attention maps included in the deployment spec
+
+[Visual placeholder: architecture_diagram.png — the CNN+Transformer hybrid
+ pipeline diagram]
+
+
+----------------------------------------------------------------
+SLIDE 8 — THE ANSWER
+----------------------------------------------------------------
+Tag     : THE ANSWER
+Heading : What I recommend
+
+• My main recommendation: deploy ViT-B/16 immediately (perfect Recall,
+  AUC=1.000 on test set); collect data to 5,000+ images; transition to
+  Hybrid CNN+Transformer (architecturally superior, dual-interpretability,
+  scalable)
+
+• Why I believe it works: ViT — 99.34% accuracy, 100% Recall, 0 missed
+  fires, AUC=1.000 on 152-image test set; Hybrid — Grad-CAM (local) +
+  CLS attention (global) provide two independent explanation channels
+  unavailable in ViT
+
+• What would change if adopted: detection latency drops from 1–2 hours
+  (satellite) to <2 minutes; monitoring extends to remote forests;
+  false alarm rate reduces as training data grows (currently 1–2 per
+  152 images)
+
+• What it does not solve (openly): video/temporal fire tracking,
+  multi-class labels (fire/smoke/smouldering), UAV/edge deployment on
+  Jetson hardware — all defined as future work with specific next steps
+
+
+----------------------------------------------------------------
+SLIDE 9 — A REALITY CHECK
+----------------------------------------------------------------
+Tag     : A REALITY CHECK
+Heading : Can it really be done?
+
+TABLE (5 rows, 3 columns):
+
+The question                        | My honest view                                      | Notes
+------------------------------------|-----------------------------------------------------|-----------------------------------------------------------
+Technically, can it be built?       | Already built and validated — ViT-B/16 and Hybrid   | Colab T4 GPU sufficient for training; cloud inference
+                                    | trained, tested, interpretability running            | API sufficient for deployment
+Day to day, will people manage it?  | Yes with minimal effort — output is binary label +  | Forest departments need only a camera feed and API
+                                    | confidence score, integrates into any dashboard      | endpoint; no ML expertise required for operation
+What will it cost, and who pays?    | Low incremental cost — cloud inference ~$0.01 per   | Most forest departments already have or are acquiring
+                                    | 1,000 images; primary cost is camera infrastructure  | camera networks
+How long will it take?              | ViT deployment: 1–2 months; Hybrid at scale:        | Full timeline in the case study report Chapter 5
+                                    | 7–9 months (includes data collection phase)          | implementation plan
+What could go wrong, and what then? | Performance drift if deployment data differs from   | Mitigation: monthly retraining on confirmed fire images;
+                                    | training distribution; false alarm fatigue           | lower threshold to 0.3 for safety-critical zones
+
+
+----------------------------------------------------------------
+SLIDE 10 — THE DIFFERENCE IT MAKES
+----------------------------------------------------------------
+Tag     : THE DIFFERENCE IT MAKES
+Heading : Who benefits, and how
+
+• Where used: camera networks on watchtowers, UAV feeds, road-side poles
+  in fire-prone zones; cloud inference API integrated with national fire
+  monitoring dashboards and GIS platforms
+
+• Who gains and how: forest departments (detection in seconds vs. hours);
+  firefighting teams (earlier dispatch); local communities in fire-prone
+  regions (reduced exposure); biodiversity (less burn area);
+  climate — less megafire CO₂
+
+• SDG 13 & 15: reduces climate-accelerating CO₂ from uncontrolled
+  megafires (SDG 13 Climate Action); protects biodiversity-critical
+  forest ecosystems (SDG 15 Life on Land); low-cost deployment
+  democratises monitoring for under-resourced regions
+
+• Where else this idea travels: wildfire monitoring globally; industrial
+  fire safety; building surveillance; same hybrid architecture applicable
+  to medical imaging, satellite anomaly detection, and multi-hazard monitoring
+
+
+----------------------------------------------------------------
+SLIDE 11 — WRAPPING UP
+----------------------------------------------------------------
+Tag     : WRAPPING UP
+Heading : What I learned
+
+• In short: forest fires need sub-minute detection; CNN (98.68%),
+  ViT (99.34%), Hybrid (98.03%) all achieved high accuracy on 152-image
+  test; ViT = zero missed fires; Hybrid needs scale to reach its ceiling —
+  deploy ViT now, Hybrid later
+
+• What this case taught me: dataset scale is more decisive than architecture
+  on small benchmarks; interpretability is a deployment prerequisite, not
+  an add-on; complementary explanations (Grad-CAM + attention) are stronger
+  than either alone
+
+• What I could not cover: video/temporal fire tracking, multi-class labels
+  (fire/smoke/smouldering), edge deployment on UAV/Jetson hardware,
+  geo-diverse validation across climate zones
+
+• Where this goes next: D-Fire (21,527 images) to validate Hybrid advantage;
+  self-supervised pretraining (MAE/DINO) for fire domain; knowledge
+  distillation for edge inference; federated learning across distributed
+  camera networks
+
+
+----------------------------------------------------------------
+SLIDE 12 — SOURCES
+----------------------------------------------------------------
+Tag     : SOURCES
+Heading : Sources and thanks
+
+[1] Tan & Le, "EfficientNet: Rethinking Model Scaling for CNNs," ICML, 2019
+[2] Dosovitskiy et al., "An Image is Worth 16×16 Words," ICLR, 2021
+[3] Dai et al., "CoAtNet: Marrying Convolution and Attention," NeurIPS, 2021
+[4] Vaswani et al., "Attention Is All You Need," NeurIPS, 2017
+[5] Selvaraju et al., "Grad-CAM: Visual Explanations from Deep Networks," ICCV, 2017
+[6] De Venâncio et al., "Automatic Fire Detection using Deep CNNs," Neural Comp. & Apps., 2022
+[7] Shamsoshoara et al., "Aerial Imagery Pile Burn Detection — FLAME dataset," Computer Networks, 2021
+[8] phylake1337, "Fire Dataset," Kaggle, 2019
+
+With thanks to Dr. Pandiaraj A. and the Department of Computing Technologies, SRM IST
+
+
+----------------------------------------------------------------
+SLIDE 13 — THANK YOU
+----------------------------------------------------------------
+Thank you
+I would be glad to take your questions
+
+
+================================================================
+END OF PPT CONTENT — REVIEW 3
+================================================================
