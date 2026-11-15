@@ -1,198 +1,142 @@
 """
-Generates the hybrid CNN+Transformer architecture diagram for the paper.
-Output: outputs/plots/architecture_diagram.png
+Hybrid CNN+Transformer Architecture Diagram.
+Layout: top row left→right, right-side L-connector, bottom row right→left.
 """
-
 import os
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.patches import FancyBboxPatch
-import numpy as np
 
 OUTPUT_PATH = os.path.join(
     os.path.dirname(__file__), "..", "outputs", "plots", "architecture_diagram.png"
 )
 
-# ── colour palette ────────────────────────────────────────────────────────────
-C_INPUT      = "#E8F4FD"   # light blue
-C_CNN        = "#D4EDDA"   # light green
-C_PROJ       = "#FFF3CD"   # light yellow
-C_TOKEN      = "#E2D9F3"   # light purple
-C_TRANSF     = "#F8D7DA"   # light red/pink
-C_CLS        = "#D1ECF1"   # light cyan
-C_HEAD       = "#FDECEA"   # light orange
-C_OUTPUT     = "#C8E6C9"   # medium green
+C = dict(
+    input="#DAEAF8", cnn="#C8E6C9", proj="#FFF8DC", token="#E8DAEF",
+    trans="#FADBD8", cls="#D6EAF8", head="#FDEBD0", out="#A9DFBF",
+    edge="#2C3E50", txt="#1A1A1A", gray="#7F8C8D",
+)
 
-EDGE = "#333333"
-TEXT = "#1a1a1a"
-
-fig, ax = plt.subplots(figsize=(18, 8))
-ax.set_xlim(0, 18)
-ax.set_ylim(0, 8)
+fig, ax = plt.subplots(figsize=(16, 5.8))
+ax.set_xlim(0, 16)
+ax.set_ylim(0, 5.8)
 ax.axis("off")
 fig.patch.set_facecolor("white")
 
 
-def box(ax, x, y, w, h, color, label, sublabel=None, fontsize=9, radius=0.25):
-    """Draw a rounded rectangle with centred text."""
-    rect = FancyBboxPatch(
-        (x - w / 2, y - h / 2), w, h,
-        boxstyle=f"round,pad=0.05,rounding_size={radius}",
-        linewidth=1.4, edgecolor=EDGE, facecolor=color, zorder=3,
-    )
-    ax.add_patch(rect)
-    if sublabel:
-        ax.text(x, y + 0.18, label, ha="center", va="center",
-                fontsize=fontsize, fontweight="bold", color=TEXT, zorder=4)
-        ax.text(x, y - 0.22, sublabel, ha="center", va="center",
-                fontsize=7.5, color="#555555", zorder=4, style="italic")
+def box(cx, cy, w, h, fc, title, sub=None, fs=9.2):
+    ax.add_patch(FancyBboxPatch(
+        (cx - w / 2, cy - h / 2), w, h,
+        boxstyle="round,pad=0.06",
+        lw=1.3, edgecolor=C["edge"], facecolor=fc, zorder=3))
+    if sub:
+        ax.text(cx, cy + 0.17, title, ha="center", va="center",
+                fontsize=fs, fontweight="bold", color=C["txt"], zorder=4)
+        ax.text(cx, cy - 0.18, sub, ha="center", va="center",
+                fontsize=6.7, color="#444", style="italic", zorder=4)
     else:
-        ax.text(x, y, label, ha="center", va="center",
-                fontsize=fontsize, fontweight="bold", color=TEXT, zorder=4)
+        ax.text(cx, cy, title, ha="center", va="center",
+                fontsize=fs, fontweight="bold", color=C["txt"], zorder=4)
 
 
-def arrow(ax, x1, y1, x2, y2, label=None):
-    """Draw a simple arrow between two points."""
-    ax.annotate(
-        "", xy=(x2, y2), xytext=(x1, y1),
-        arrowprops=dict(arrowstyle="-|>", color=EDGE, lw=1.4),
-        zorder=2,
-    )
+def harrow(x1, x2, y, label=None):
+    ax.annotate("", xy=(x2, y), xytext=(x1, y),
+                arrowprops=dict(arrowstyle="-|>", color=C["edge"], lw=1.25), zorder=2)
     if label:
-        mx, my = (x1 + x2) / 2, (y1 + y2) / 2
-        ax.text(mx, my + 0.18, label, ha="center", va="bottom",
-                fontsize=7.5, color="#444444", zorder=5,
-                bbox=dict(boxstyle="round,pad=0.1", fc="white", ec="none", alpha=0.8))
+        ax.text((x1 + x2) / 2, y + 0.17, label, ha="center", va="bottom",
+                fontsize=6.6, color="#555",
+                bbox=dict(boxstyle="round,pad=0.06", fc="white", ec="none", alpha=0.85))
 
 
-def curved_arrow(ax, x1, y1, x2, y2, label=None):
-    """Draw a curved/elbow arrow for layout routing."""
-    ax.annotate(
-        "", xy=(x2, y2), xytext=(x1, y1),
-        arrowprops=dict(
-            arrowstyle="-|>", color=EDGE, lw=1.4,
-            connectionstyle="arc3,rad=-0.3",
-        ),
-        zorder=2,
-    )
-    if label:
-        mx, my = (x1 + x2) / 2, (y1 + y2) / 2 + 0.5
-        ax.text(mx, my, label, ha="center", va="bottom",
-                fontsize=7.5, color="#444444", zorder=5,
-                bbox=dict(boxstyle="round,pad=0.1", fc="white", ec="none", alpha=0.8))
+# ─── Title ────────────────────────────────────────────────────────────────────
+ax.text(8.0, 5.55,
+        "Hybrid CNN+Transformer Architecture for Forest Fire Detection",
+        ha="center", va="center", fontsize=12, fontweight="bold", color=C["txt"])
 
+# ─── Phase spans ──────────────────────────────────────────────────────────────
+Y1, Y2 = 3.90, 1.88
 
-# ── Title ─────────────────────────────────────────────────────────────────────
-ax.text(9, 7.6, "Hybrid CNN+Transformer Architecture for Forest Fire Detection",
-        ha="center", va="center", fontsize=12, fontweight="bold", color=TEXT)
+ax.annotate("", xy=(2.22, 4.62), xytext=(5.02, 4.62),
+            arrowprops=dict(arrowstyle="<->", color=C["gray"], lw=0.9))
+ax.text(3.62, 4.73, "Phase 1 — frozen CNN", ha="center",
+        fontsize=7.0, color=C["gray"], style="italic")
 
-# ── TOP ROW (left → right) ────────────────────────────────────────────────────
-# 1. Input Image
-box(ax, 1.2, 5.5, 1.6, 1.0, C_INPUT, "Input Image", "224 × 224 × 3")
+ax.annotate("", xy=(2.22, 4.88), xytext=(10.62, 4.88),
+            arrowprops=dict(arrowstyle="<->", color=C["gray"], lw=0.9))
+ax.text(6.42, 4.99, "Phase 2 — end-to-end fine-tuning (differential LR)",
+        ha="center", fontsize=7.0, color=C["gray"], style="italic")
 
-# 2. EfficientNet-B4 Backbone
-box(ax, 3.7, 5.5, 2.6, 1.2, C_CNN, "EfficientNet-B4", "CNN Backbone\n(pretrained ImageNet-1K)", fontsize=9.5)
+# ─── Top row (left → right) ───────────────────────────────────────────────────
+#  Box edges:  Input [0.4, 2.0]  EfficientNet [2.2, 5.0]  Conv [5.5, 7.5]  Flatten [8.4, 10.6]
+box(1.20, Y1, 1.60, 0.90, C["input"], "Input Image",     "224×224×3")
+box(3.60, Y1, 2.80, 1.10, C["cnn"],   "EfficientNet-B4", "CNN Backbone (ImageNet-1K)", fs=9.5)
+box(6.50, Y1, 2.00, 0.90, C["proj"],  "1×1 Conv + BN",   "B×512×7×7")
+box(9.50, Y1, 2.20, 0.90, C["token"], "Flatten + CLS",   "50 tokens × 512")
+ax.text(9.50, 4.51, "+ Positional Embedding", ha="center",
+        fontsize=6.8, color="#5D4E8A", style="italic")
 
-# 3. CNN Feature Map callout (tensor shape annotation)
-box(ax, 6.5, 5.5, 1.6, 0.85, C_CNN, "Feature Map", "B × 1792 × 7 × 7", fontsize=8.5)
+harrow(2.02, 2.18, Y1, "RGB")
+harrow(5.02, 5.48, Y1, "7×7×1792")
+harrow(7.52, 8.38, Y1, "7×7×512")
 
-# 4. 1×1 Conv + BN Projection
-box(ax, 9.0, 5.5, 2.0, 1.0, C_PROJ, "1×1 Conv + BN", "B × 512 × 7 × 7", fontsize=8.5)
+# ─── L-connector (exits top-row Flatten right → goes right → down → enters Transformer right) ──
+# Flatten right = 10.6, Transformer right = 12.5
+ax.plot([10.62, 12.8, 12.8], [Y1, Y1, Y2],
+        color=C["edge"], lw=1.4, solid_capstyle="round", zorder=2)
+harrow(12.80, 12.52, Y2)
+ax.text(13.00, (Y1 + Y2) / 2, "token\nsequence", ha="left", va="center",
+        fontsize=7.0, color="#555")
 
-# 5. Flatten / Tokenisation
-box(ax, 11.6, 5.5, 1.9, 1.0, C_TOKEN, "Flatten + CLS", "50 tokens × 512", fontsize=8.5)
-
-# 6. Positional Embedding (small note above)
-ax.text(11.6, 6.25, "+ Positional Embedding", ha="center", va="bottom",
-        fontsize=7.5, color="#555555", style="italic")
-
-# Arrows: top row
-arrow(ax, 2.01, 5.5, 2.38, 5.5, label="RGB\nimage")
-arrow(ax, 4.99, 5.5, 5.68, 5.5, label="conv\nfeatures")
-arrow(ax, 7.30, 5.5, 7.98, 5.5, label="spatial\nmap")
-arrow(ax, 10.00, 5.5, 10.64, 5.5, label="projected\ntokens")
-
-# ── BOTTOM ROW (right → left) ─────────────────────────────────────────────────
-# 7. Transformer Encoder block
-box(ax, 9.5, 2.5, 4.0, 1.8, C_TRANSF,
+# ─── Bottom row (data flows right→left through diagram) ───────────────────────
+#  Transformer (large, rightmost)  cx=10.0  w=5.0  → edges [7.5, 12.5]
+box(10.00, Y2, 5.00, 1.58, C["trans"],
     "Transformer Encoder × 4",
-    "MHSA (8 heads) + FFN (d=2048)\npre-LN · dropout=0.1",
-    fontsize=9, radius=0.3)
+    "MHSA (8 heads, d=512)  +  FFN (d=2048)  ·  pre-LN  ·  dropout=0.1",
+    fs=9.5)
 
-# Small inner detail: 4 stacked layers
-for i in range(4):
-    mini_y = 2.1 + i * 0.38
-    xoff = 9.5
-    rect = FancyBboxPatch(
-        (xoff + 1.65, mini_y - 0.14), 1.1, 0.27,
-        boxstyle="round,pad=0.02", linewidth=0.6,
-        edgecolor="#999999", facecolor="#ffffff", alpha=0.5, zorder=5,
-    )
-    ax.add_patch(rect)
-    ax.text(xoff + 2.2, mini_y, f"Layer {i+1}", ha="center", va="center",
-            fontsize=6.5, color="#444444", zorder=6)
+# layer chips — centred inside Transformer box (cx=10.0, w=5.0 → inner [8.2, 11.8])
+for i, lbl in enumerate(["L1", "L2", "L3", "L4"]):
+    lx = 8.55 + i * 1.08  # 8.55, 9.63, 10.71, 11.79 — all inside [7.5, 12.5]
+    ax.add_patch(FancyBboxPatch(
+        (lx - 0.40, Y2 - 0.54), 0.80, 0.26,
+        boxstyle="round,pad=0.02", lw=0.5,
+        edgecolor="#AAA", facecolor="white", alpha=0.65, zorder=5))
+    ax.text(lx, Y2 - 0.41, lbl, ha="center", va="center",
+            fontsize=7.0, color="#555", zorder=6)
 
-# 8. CLS Token output
-box(ax, 5.0, 2.5, 1.8, 1.0, C_CLS, "CLS Token", "B × 512", fontsize=8.5)
+#  CLS Token   cx=5.7  w=2.0  → edges [4.7, 6.7]   gap to Transformer left (7.5) = 0.8
+box(5.70, Y2, 2.00, 0.92, C["cls"],  "CLS Token",       "B × 512")
+#  Classifier  cx=3.20 w=2.40 → edges [2.0, 4.4]   gap to CLS left (4.7) = 0.3
+box(3.20, Y2, 2.40, 0.96, C["head"], "Classifier Head", "Dropout(0.3)\n+ Linear(512→2)")
+#  Output      cx=1.00 w=1.50 → edges [0.25, 1.75]  gap to Classifier left (2.0) = 0.25
+box(1.00, Y2, 1.50, 0.90, C["out"],  "Output",          "Fire / No-Fire")
 
-# 9. Classifier Head
-box(ax, 2.8, 2.5, 2.2, 1.0, C_HEAD, "Classifier Head", "Dropout(0.3)\n+ Linear(512→2)", fontsize=8.5)
+# arrows bottom row (pointing left)
+harrow(7.48, 6.72, Y2)
+ax.text(7.10, Y2 + 0.32, "CLS repr.", ha="center", fontsize=7.0, color="#555")
 
-# 10. Output
-box(ax, 0.9, 2.5, 1.3, 1.0, C_OUTPUT, "Output", "Fire / No-Fire", fontsize=8.5)
+harrow(4.68, 4.42, Y2)
+ax.text(4.55, Y2 + 0.32, "B×512", ha="center", fontsize=7.0, color="#555")
 
-# Arrows: bottom row
-arrow(ax, 7.48, 2.5, 5.90, 2.5, label="CLS\nrepresentation")
-arrow(ax, 4.09, 2.5, 3.90, 2.5, label="B × 512")
-arrow(ax, 1.69, 2.5, 1.55, 2.5)
+harrow(1.98, 1.77, Y2)
 
-# ── CONNECTOR from top row → bottom row ──────────────────────────────────────
-# From Tokenisation (11.6, 5.0) down to Transformer (11.6, 3.4)
-ax.annotate(
-    "", xy=(11.6, 3.41), xytext=(11.6, 4.99),
-    arrowprops=dict(arrowstyle="-|>", color=EDGE, lw=1.4),
-    zorder=2,
-)
-ax.text(11.95, 4.2, "token\nsequence", ha="left", va="center",
-        fontsize=7.5, color="#444444")
+# ─── Legend ───────────────────────────────────────────────────────────────────
+ax.legend(handles=[
+    mpatches.Patch(facecolor=C["input"], edgecolor=C["edge"], label="Input"),
+    mpatches.Patch(facecolor=C["cnn"],   edgecolor=C["edge"], label="CNN Backbone"),
+    mpatches.Patch(facecolor=C["proj"],  edgecolor=C["edge"], label="Projection"),
+    mpatches.Patch(facecolor=C["token"], edgecolor=C["edge"], label="Tokenisation"),
+    mpatches.Patch(facecolor=C["trans"], edgecolor=C["edge"], label="Transformer"),
+    mpatches.Patch(facecolor=C["cls"],   edgecolor=C["edge"], label="CLS Output"),
+    mpatches.Patch(facecolor=C["head"],  edgecolor=C["edge"], label="Classifier"),
+    mpatches.Patch(facecolor=C["out"],   edgecolor=C["edge"], label="Prediction"),
+], loc="lower center", ncol=8, fontsize=7.5,
+   frameon=True, framealpha=0.92, edgecolor="#CCC",
+   bbox_to_anchor=(0.5, 0.005))
 
-# ── Colour legend ─────────────────────────────────────────────────────────────
-legend_items = [
-    mpatches.Patch(facecolor=C_INPUT,  edgecolor=EDGE, label="Input"),
-    mpatches.Patch(facecolor=C_CNN,    edgecolor=EDGE, label="CNN Backbone"),
-    mpatches.Patch(facecolor=C_PROJ,   edgecolor=EDGE, label="Projection"),
-    mpatches.Patch(facecolor=C_TOKEN,  edgecolor=EDGE, label="Tokenisation"),
-    mpatches.Patch(facecolor=C_TRANSF, edgecolor=EDGE, label="Transformer"),
-    mpatches.Patch(facecolor=C_CLS,    edgecolor=EDGE, label="CLS Output"),
-    mpatches.Patch(facecolor=C_HEAD,   edgecolor=EDGE, label="Classifier"),
-    mpatches.Patch(facecolor=C_OUTPUT, edgecolor=EDGE, label="Prediction"),
-]
-ax.legend(
-    handles=legend_items, loc="lower center", ncol=8,
-    fontsize=8, frameon=True, framealpha=0.9, edgecolor="#cccccc",
-    bbox_to_anchor=(0.5, -0.02),
-)
-
-# ── Phase annotations ─────────────────────────────────────────────────────────
-# Phase 1 bracket over EfficientNet
-ax.annotate(
-    "", xy=(2.38, 6.25), xytext=(4.99, 6.25),
-    arrowprops=dict(arrowstyle="<->", color="#777777", lw=1.0),
-)
-ax.text(3.7, 6.45, "Phase 1: frozen backbone", ha="center",
-        fontsize=7.5, color="#777777", style="italic")
-
-# Phase 2 bracket over full pipeline
-ax.annotate(
-    "", xy=(2.38, 6.65), xytext=(12.55, 6.65),
-    arrowprops=dict(arrowstyle="<->", color="#777777", lw=1.0),
-)
-ax.text(7.4, 6.85, "Phase 2: end-to-end fine-tuning (differential LR)", ha="center",
-        fontsize=7.5, color="#777777", style="italic")
-
-plt.tight_layout(rect=[0, 0.06, 1, 1])
+plt.tight_layout(rect=[0, 0.07, 1, 0.97])
 os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
-plt.savefig(OUTPUT_PATH, dpi=180, bbox_inches="tight", facecolor="white")
-print(f"Saved: {OUTPUT_PATH}")
+plt.savefig(OUTPUT_PATH, dpi=200, bbox_inches="tight", facecolor="white")
+print("Saved:", OUTPUT_PATH)
